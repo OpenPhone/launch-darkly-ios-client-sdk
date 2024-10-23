@@ -74,7 +74,7 @@ public final class LDFileCache: KeyedValueCaching {
                 }
             }
             dictionary.removeValue(forKey: Self.initializationKey)
-            let data = try NSKeyedArchiver.archivedData(withRootObject: dictionary, requiringSecureCoding: true)
+            let data = try JSONEncoder().encode(dictionary)
             let url = try pathToFile()
             try data.write(to: url, options: .atomic)
         } catch {
@@ -87,9 +87,7 @@ public final class LDFileCache: KeyedValueCaching {
         do {
             let url = try pathToFile()
             let data = try Data(contentsOf: url)
-            guard let flags = try NSKeyedUnarchiver
-                .unarchivedObject(ofClass: NSDictionary.self, from: data) as? [String: Data]
-            else { throw Error.cannotUnarchiveDictionary }
+            let flags = try JSONDecoder().decode([String: Data].self, from: data)
             flags.forEach { key, value in
                 inMemoryCache.set(value, forKey: key)
             }
@@ -117,7 +115,6 @@ extension LDFileCache: TypeIdentifying { }
 extension LDFileCache {
     enum Error: Swift.Error {
         case cannotAccessLibraryDirectory
-        case cannotUnarchiveDictionary
     }
     enum Constants {
         static var writeToFileDelay: DispatchTimeInterval { .milliseconds(300) }
