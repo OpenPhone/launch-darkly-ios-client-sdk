@@ -8,7 +8,7 @@ public final class LDInMemoryCache: KeyedValueCaching {
     private var cache: [String: Any] = [:]
     private var cacheLock = NSLock()
 
-    public static var builder: (String) -> KeyedValueCaching {
+    public static func builder() -> (String) -> LDInMemoryCache {
         return { cacheKey in
             instancesLock.lock()
             defer { instancesLock.unlock() }
@@ -32,9 +32,8 @@ public final class LDInMemoryCache: KeyedValueCaching {
     }
 
     public func dictionary(forKey: String) -> [String : Any]? {
-        cacheLock.lock()
-        defer { cacheLock.unlock() }
-        return cache[forKey] as? [String: Any]
+        // Legacy - not used by the library
+        return nil
     }
 
     public func removeObject(forKey: String) {

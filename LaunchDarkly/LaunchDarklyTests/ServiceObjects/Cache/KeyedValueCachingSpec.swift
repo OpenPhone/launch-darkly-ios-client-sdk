@@ -11,7 +11,13 @@ final class UserDefaultsCachingSpec: KeyedValueCachingBaseSpec {
 
 final class LDInMemoryCacheSpec: KeyedValueCachingBaseSpec {
     override func makeSut(_ key: String) -> KeyedValueCaching {
-        return LDInMemoryCache.builder(key)
+        return LDInMemoryCache.builder()(key)
+    }
+}
+
+final class LDFileCacheSpec: KeyedValueCachingBaseSpec {
+    override func makeSut(_ key: String) -> KeyedValueCaching {
+        return LDFileCache.builder()(key)
     }
 }
 
