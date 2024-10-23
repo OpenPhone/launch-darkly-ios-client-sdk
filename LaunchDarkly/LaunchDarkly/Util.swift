@@ -1,5 +1,6 @@
 import CommonCrypto
 import Foundation
+import Dispatch
 
 class Util {
     internal static let validKindCharacterSet = CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-")
@@ -26,5 +27,30 @@ extension String {
         }
 
         return true
+    }
+}
+
+extension DispatchQueue {
+
+    func debouncer() -> Debouncer {
+        Debouncer(queue: self)
+    }
+
+    final class Debouncer {
+        private let lock = NSLock()
+        private let queue: DispatchQueue
+        private var workItem: DispatchWorkItem?
+
+        fileprivate init(queue: DispatchQueue) {
+            self.queue = queue
+        }
+
+        func debounce(interval: DispatchTimeInterval, action: @escaping () -> Void) {
+            lock.lock(); defer { lock.unlock() }
+            workItem?.cancel()
+            let workItem = DispatchWorkItem(block: action)
+            self.workItem = workItem
+            queue.asyncAfter(deadline: .now() + interval, execute: workItem)
+        }
     }
 }

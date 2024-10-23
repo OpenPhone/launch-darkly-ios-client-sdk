@@ -5,6 +5,7 @@ public final class LDFileCache: KeyedValueCaching {
     private static let instancesLock = NSLock()
     private let cacheKey: String
     private let inMemoryCache: LDInMemoryCache
+    private let fileQueue = DispatchQueue(label: "ld_file_io", qos: .utility).debouncer()
 
     public static func builder() -> (String) -> KeyedValueCaching {
         return { cacheKey in
@@ -13,7 +14,7 @@ public final class LDFileCache: KeyedValueCaching {
             let inMemoryCache = LDInMemoryCache.builder()(cacheKey)
             let cache = LDFileCache(cacheKey: cacheKey, inMemoryCache: inMemoryCache)
             if inMemoryCache.data(forKey: "is_initialized") == nil {
-                cache.deserialize()
+                cache.deserializeFromFile()
                 inMemoryCache.set(Data(), forKey: "is_initialized")
             }
             return cache
@@ -55,15 +56,17 @@ public final class LDFileCache: KeyedValueCaching {
         self.inMemoryCache = inMemoryCache
     }
 
-    func deserialize() {
+    func deserializeFromFile() {
 
     }
 
-    func serialize() {
+    func serializeToFile() {
 
     }
 
     func scheduleSerialization() {
-
+        fileQueue.debounce(interval: .milliseconds(500)) { [weak self] in
+            self?.serializeToFile()
+        }
     }
 }
