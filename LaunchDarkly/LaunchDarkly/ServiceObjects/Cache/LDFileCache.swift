@@ -9,15 +9,15 @@ public final class LDFileCache: KeyedValueCaching {
     private let fileQueue = DispatchQueue(label: "ld_file_io", qos: .utility).debouncer()
     private let logger: OSLog
 
-    public static func builder() -> LDConfig.CacheFactory {
+    public static func factory() -> LDConfig.CacheFactory {
         return { logger, cacheKey in
             instancesLock.lock()
             defer { instancesLock.unlock() }
-            let inMemoryCache = LDInMemoryCache.builder()(logger, cacheKey)
+            let inMemoryCache = LDInMemoryCache.factory()(logger, cacheKey)
             let cache = LDFileCache(cacheKey: cacheKey, inMemoryCache: inMemoryCache, logger: logger)
-            if inMemoryCache.data(forKey: "is_initialized") == nil {
+            if inMemoryCache.data(forKey: initializationKey) == nil {
                 cache.deserializeFromFile()
-                inMemoryCache.set(Data(), forKey: "is_initialized")
+                inMemoryCache.set(Data(), forKey: initializationKey)
             }
             return cache
         }
@@ -48,7 +48,7 @@ public final class LDFileCache: KeyedValueCaching {
     }
 
     public func keys() -> [String] {
-        return inMemoryCache.keys()
+        return inMemoryCache.keys().filter({ $0 != Self.initializationKey })
     }
 
     // MARK: - Internal
@@ -60,7 +60,7 @@ public final class LDFileCache: KeyedValueCaching {
     }
 
     func scheduleSerialization() {
-        fileQueue.debounce(interval: .milliseconds(500)) { [weak self] in
+        fileQueue.debounce(interval: Constants.writeToFileDelay) { [weak self] in
             self?.serializeToFile()
         }
     }
@@ -73,6 +73,7 @@ public final class LDFileCache: KeyedValueCaching {
                     dictionary[key] = data
                 }
             }
+            dictionary.removeValue(forKey: Self.initializationKey)
             let data = try NSKeyedArchiver.archivedData(withRootObject: dictionary, requiringSecureCoding: true)
             let url = try pathToFile()
             try data.write(to: url, options: .atomic)
@@ -107,13 +108,18 @@ public final class LDFileCache: KeyedValueCaching {
         try fileManager.createDirectory(at: dir, withIntermediateDirectories: true)
         return dir.appendingPathComponent(cacheKey)
     }
+
+    private static var initializationKey: String { "LDFileCache_initialized" }
 }
 
 extension LDFileCache: TypeIdentifying { }
 
-private extension LDFileCache {
+extension LDFileCache {
     enum Error: Swift.Error {
         case cannotAccessLibraryDirectory
         case cannotUnarchiveDictionary
+    }
+    enum Constants {
+        static var writeToFileDelay: DispatchTimeInterval { .milliseconds(300) }
     }
 }

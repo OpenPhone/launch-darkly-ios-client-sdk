@@ -11,13 +11,61 @@ final class UserDefaultsCachingSpec: KeyedValueCachingBaseSpec {
 
 final class LDInMemoryCacheSpec: KeyedValueCachingBaseSpec {
     override func makeSut(_ key: String) -> KeyedValueCaching {
-        return LDInMemoryCache.builder()(key)
+        return LDInMemoryCache.factory()(.disabled, key)
     }
 }
 
 final class LDFileCacheSpec: KeyedValueCachingBaseSpec {
+
     override func makeSut(_ key: String) -> KeyedValueCaching {
-        return LDFileCache.builder()(key)
+        return LDFileCache.factory()(.disabled, key)
+    }
+
+    private func makeFileSut(_ key: String) -> LDFileCache {
+        return makeSut(key) as! LDFileCache
+    }
+
+    func testPathToFile() throws {
+        let sut1 = makeFileSut("test1")
+        let sut2 = makeFileSut("test2")
+        XCTAssertNotEqual(try sut1.pathToFile(), try sut2.pathToFile())
+    }
+
+    func testCorruptFile() throws {
+        let sut = makeFileSut(#function)
+        let url = try sut.pathToFile()
+        try Data("corrupt".utf8).write(to: url, options: .atomic)
+        sut.deserializeFromFile()
+        XCTAssertEqual(sut.keys(), [])
+    }
+
+    func testSerialization() throws {
+        let dict: [String: Data] = [
+            "key1": try JSONSerialization.data(withJSONObject: [
+                "jsonKey1": 42,
+                "jsonKey2": "a string",
+                "jsonKey3": ["a null": NSNull()]
+            ]),
+            "key2": Data("random 🔥".utf8),
+        ]
+        let sut = makeFileSut(#function)
+        dict.forEach { key, value in
+            sut.set(value, forKey: key)
+        }
+        let exp = XCTestExpectation(description: #function)
+        let delay = DispatchTime.now() + LDFileCache.Constants.writeToFileDelay + .milliseconds(200)
+        DispatchQueue.main.asyncAfter(deadline: delay) {
+            sut.removeAll()
+            XCTAssertEqual(sut.keys(), [])
+            sut.deserializeFromFile()
+            let keys = sut.keys()
+            XCTAssertEqual(Set(keys), Set(dict.keys))
+            keys.forEach { key in
+                XCTAssertEqual(sut.data(forKey: key), dict[key])
+            }
+            exp.fulfill()
+        }
+        wait(for: [exp], timeout: 1)
     }
 }
 
