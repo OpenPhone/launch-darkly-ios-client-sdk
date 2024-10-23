@@ -1,7 +1,7 @@
 import Foundation
 
 // sourcery: autoMockable
-protocol KeyedValueCaching {
+public protocol KeyedValueCaching {
     func set(_ value: Data, forKey: String)
     func data(forKey: String) -> Data?
     func dictionary(forKey: String) -> [String: Any]?
@@ -11,15 +11,15 @@ protocol KeyedValueCaching {
 }
 
 extension UserDefaults: KeyedValueCaching {
-    func set(_ value: Data, forKey: String) {
+    public func set(_ value: Data, forKey: String) {
         set(value as Any?, forKey: forKey)
     }
 
-    func removeAll() {
+    public func removeAll() {
         dictionaryRepresentation().keys.forEach { removeObject(forKey: $0) }
     }
 
-    func keys() -> [String] {
+    public func keys() -> [String] {
         dictionaryRepresentation().keys.map { String($0) }
     }
 }

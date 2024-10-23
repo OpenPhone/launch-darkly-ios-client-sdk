@@ -752,7 +752,7 @@ public class LDClient {
 
         os_log("%s LDClient starting", log: config.logger, type: .debug, typeName(and: #function))
 
-        let serviceFactory = serviceFactory ?? ClientServiceFactory(logger: config.logger)
+        let serviceFactory = serviceFactory ?? ClientServiceFactory(logger: config.logger, cacheBuilder: config.cacheBuilder)
         var keys = [config.mobileKey]
         keys.append(contentsOf: config.getSecondaryMobileKeys().values)
         serviceFactory.makeCacheConverter().convertCacheData(serviceFactory: serviceFactory, keysToConvert: keys, maxCachedContexts: config.maxCachedContexts)

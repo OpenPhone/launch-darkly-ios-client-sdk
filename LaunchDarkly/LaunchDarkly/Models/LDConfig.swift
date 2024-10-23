@@ -253,6 +253,11 @@ public struct LDConfig {
         /// The default logger for the SDK. Can be overridden to provide customization.
         static let logger: OSLog = OSLog(subsystem: "com.launchdarkly", category: "ios-client-sdk")
 
+        /// The default cache for feature flags is UserDefaults
+        static let cacheBuilder: (String?) -> KeyedValueCaching = { cacheKey in
+            UserDefaults(suiteName: cacheKey)!
+        }
+
         /// The default behavior for event payload compression.
         static let enableCompression: Bool = false
     }
@@ -426,6 +431,9 @@ public struct LDConfig {
 
     /// Configure the logger that will be used by the rest of the SDK.
     public var logger: OSLog = Defaults.logger
+
+    /// Configure the persistent storage for caching flags locally
+    public var cacheBuilder: (String?) -> KeyedValueCaching = Defaults.cacheBuilder
 
     /// LaunchDarkly defined minima for selected configurable items
     public let minima: Minima
