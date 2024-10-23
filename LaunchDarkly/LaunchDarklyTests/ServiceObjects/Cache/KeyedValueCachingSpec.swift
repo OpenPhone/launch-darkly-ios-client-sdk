@@ -5,7 +5,7 @@ import XCTest
 
 final class UserDefaultsCachingSpec: KeyedValueCachingBaseSpec {
     override func makeSut(_ key: String) -> KeyedValueCaching {
-        return LDConfig.Defaults.cacheBuilder(key)
+        return LDConfig.Defaults.cacheFactory(.disabled, key)
     }
 }
 
@@ -65,7 +65,7 @@ class KeyedValueCachingBaseSpec: XCTestCase {
         XCTAssertNil(makeSut("test").data(forKey: "test_key"))
     }
 
-    func testKeysGetter() throws {
+    func testKeys() throws {
         try skipForBaseSpec()
         let sut = makeSut("test")
         let keys = Array(0..<10).map { "key_\($0)" }

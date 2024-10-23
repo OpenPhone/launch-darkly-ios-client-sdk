@@ -254,7 +254,7 @@ public struct LDConfig {
         static let logger: OSLog = OSLog(subsystem: "com.launchdarkly", category: "ios-client-sdk")
 
         /// The default cache for feature flags is UserDefaults
-        static let cacheBuilder: (String?) -> KeyedValueCaching = { cacheKey in
+        static let cacheFactory: CacheFactory = { _, cacheKey in
             UserDefaults(suiteName: cacheKey)!
         }
 
@@ -433,7 +433,7 @@ public struct LDConfig {
     public var logger: OSLog = Defaults.logger
 
     /// Configure the persistent storage for caching flags locally
-    public var cacheBuilder: (String?) -> KeyedValueCaching = Defaults.cacheBuilder
+    public var cacheFactory: CacheFactory = Defaults.cacheFactory
 
     /// LaunchDarkly defined minima for selected configurable items
     public let minima: Minima

@@ -1,5 +1,5 @@
 import Foundation
-
+import OSLog
 // sourcery: autoMockable
 public protocol KeyedValueCaching {
     func set(_ value: Data, forKey: String)
@@ -10,16 +10,6 @@ public protocol KeyedValueCaching {
     func keys() -> [String]
 }
 
-extension UserDefaults: KeyedValueCaching {
-    public func set(_ value: Data, forKey: String) {
-        set(value as Any?, forKey: forKey)
-    }
-
-    public func removeAll() {
-        dictionaryRepresentation().keys.forEach { removeObject(forKey: $0) }
-    }
-
-    public func keys() -> [String] {
-        dictionaryRepresentation().keys.map { String($0) }
-    }
+public extension LDConfig {
+    typealias CacheFactory = (_ logger: OSLog, _ cacheKey: String) -> KeyedValueCaching
 }

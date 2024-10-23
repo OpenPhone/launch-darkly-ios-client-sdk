@@ -28,15 +28,15 @@ protocol ClientServiceCreating {
 
 final class ClientServiceFactory: ClientServiceCreating {
     private let logger: OSLog
-    private let cacheBuilder: (String?) -> KeyedValueCaching
+    private let cacheFactory: LDConfig.CacheFactory
 
-    init(logger: OSLog, cacheBuilder: @escaping ((String?) -> KeyedValueCaching)) {
+    init(logger: OSLog, cacheFactory: @escaping LDConfig.CacheFactory) {
         self.logger = logger
-        self.cacheBuilder = cacheBuilder
+        self.cacheFactory = cacheFactory
     }
 
     func makeKeyedValueCache(cacheKey: String?) -> KeyedValueCaching {
-        cacheBuilder(cacheKey)
+        cacheFactory(logger, cacheKey ?? "default")
     }
 
     func makeFeatureFlagCache(mobileKey: MobileKey, maxCachedContexts: Int) -> FeatureFlagCaching {
