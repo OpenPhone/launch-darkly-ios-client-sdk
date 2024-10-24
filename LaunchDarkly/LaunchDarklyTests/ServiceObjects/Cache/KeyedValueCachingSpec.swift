@@ -33,6 +33,7 @@ final class LDFileCacheSpec: KeyedValueCachingBaseSpec {
 
     func testCorruptFile() throws {
         let sut = makeFileSut(#function)
+        sut.set(Data(), forKey: "key")
         let url = try sut.pathToFile()
         try Data("corrupt".utf8).write(to: url, options: .atomic)
         sut.deserializeFromFile()
@@ -47,6 +48,7 @@ final class LDFileCacheSpec: KeyedValueCachingBaseSpec {
                 "jsonKey3": ["a null": NSNull()]
             ]),
             "key2": Data("random 🔥".utf8),
+            "%^&*() !@#": try NSKeyedArchiver.archivedData(withRootObject: ["key": "value"], requiringSecureCoding: true),
         ]
         let sut = makeFileSut(#function)
         dict.forEach { key, value in
