@@ -108,7 +108,8 @@ public final class LDFileCache: KeyedValueCaching {
             .appendingPathComponent("ld_cache")
         else { throw Error.cannotAccessLibraryDirectory }
         try fileManager.createDirectory(at: dir, withIntermediateDirectories: true)
-        return dir.appendingPathComponent(cacheKey)
+        let fileName = Util.sha256hex(cacheKey)
+        return dir.appendingPathComponent(fileName)
     }
 
     private static var initializationKey: String { "LDFileCache_initialized" }

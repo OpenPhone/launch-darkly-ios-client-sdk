@@ -15,6 +15,10 @@ class Util {
         sha256(str).base64EncodedString()
     }
 
+    class func sha256hex(_ str: String) -> String {
+        sha256(str).map { String(format: "%02hhX", $0) }.joined()
+    }
+
     class func sha256(_ str: String) -> Data {
         let data = Data(str.utf8)
         var digest = [UInt8](repeating: 0, count: Int(CC_SHA256_DIGEST_LENGTH))
