@@ -756,7 +756,7 @@ public class LDClient {
         var keys = [config.mobileKey]
         keys.append(contentsOf: config.getSecondaryMobileKeys().values)
         let cacheConverter = serviceFactory.makeCacheConverter()
-        cacheConverter.migrateStorage(serviceFactory: serviceFactory, keysToConvert: keys)
+        cacheConverter.migrateStorage(serviceFactory: serviceFactory, keysToMigrate: keys, from: LDConfig.Defaults.cacheFactory)
         cacheConverter.convertCacheData(serviceFactory: serviceFactory, keysToConvert: keys, maxCachedContexts: config.maxCachedContexts)
         var mobileKeys = config.getSecondaryMobileKeys()
         var internalCount = 0

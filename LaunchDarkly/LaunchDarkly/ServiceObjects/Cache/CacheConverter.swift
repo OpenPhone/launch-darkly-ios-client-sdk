@@ -2,7 +2,7 @@ import Foundation
 
 // sourcery: autoMockable
 protocol CacheConverting {
-    func migrateStorage(serviceFactory: ClientServiceCreating, keysToConvert: [MobileKey])
+    func migrateStorage(serviceFactory: ClientServiceCreating, keysToMigrate: [MobileKey], from oldCache: @escaping LDConfig.CacheFactory)
     func convertCacheData(serviceFactory: ClientServiceCreating, keysToConvert: [MobileKey], maxCachedContexts: Int)
 }
 
@@ -41,12 +41,12 @@ final class CacheConverter: CacheConverting {
 
     init() { }
 
-    func migrateStorage(serviceFactory: ClientServiceCreating, keysToConvert: [MobileKey]) {
-        keysToConvert.forEach { mobileKey in
+    func migrateStorage(serviceFactory: ClientServiceCreating, keysToMigrate: [MobileKey], from oldCacheFactory: @escaping LDConfig.CacheFactory) {
+        keysToMigrate.forEach { mobileKey in
             let cacheKey = mobileKey.cacheKey()
             let newCache = serviceFactory.makeKeyedValueCache(cacheKey: cacheKey)
-            guard !(newCache is UserDefaults) else { return }
-            let oldCache = LDConfig.Defaults.cacheFactory(cacheKey, .disabled)
+            guard newCache.keys().isEmpty else { return }
+            let oldCache = oldCacheFactory(cacheKey, .disabled)
             oldCache.keys().forEach { key in
                 if let data = oldCache.data(forKey: key) {
                     newCache.set(data, forKey: key)
