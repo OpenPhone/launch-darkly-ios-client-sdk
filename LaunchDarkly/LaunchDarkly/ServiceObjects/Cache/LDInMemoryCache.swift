@@ -9,7 +9,7 @@ public final class LDInMemoryCache: KeyedValueCaching {
     private var cacheLock = NSLock()
 
     public static func factory() -> LDConfig.CacheFactory {
-        return { _, cacheKey in
+        return { cacheKey, _ in
             instancesLock.lock()
             defer { instancesLock.unlock() }
             if let cache = instances[cacheKey] { return cache }

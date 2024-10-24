@@ -254,7 +254,7 @@ public struct LDConfig {
         static let logger: OSLog = OSLog(subsystem: "com.launchdarkly", category: "ios-client-sdk")
 
         /// The default cache for feature flags is UserDefaults
-        static let cacheFactory: CacheFactory = { _, cacheKey in
+        static let cacheFactory: CacheFactory = { cacheKey, _ in
             UserDefaults(suiteName: cacheKey)!
         }
 

@@ -5,20 +5,20 @@ import XCTest
 
 final class UserDefaultsCachingSpec: KeyedValueCachingBaseSpec {
     override func makeSut(_ key: String) -> KeyedValueCaching {
-        return LDConfig.Defaults.cacheFactory(.disabled, key)
+        return LDConfig.Defaults.cacheFactory(key, .disabled)
     }
 }
 
 final class LDInMemoryCacheSpec: KeyedValueCachingBaseSpec {
     override func makeSut(_ key: String) -> KeyedValueCaching {
-        return LDInMemoryCache.factory()(.disabled, key)
+        return LDInMemoryCache.factory()(key, .disabled)
     }
 }
 
 final class LDFileCacheSpec: KeyedValueCachingBaseSpec {
 
     override func makeSut(_ key: String) -> KeyedValueCaching {
-        return LDFileCache.factory()(.disabled, key)
+        return LDFileCache.factory()(key, .disabled)
     }
 
     private func makeFileSut(_ key: String) -> LDFileCache {

@@ -10,10 +10,10 @@ public final class LDFileCache: KeyedValueCaching {
     private let logger: OSLog
 
     public static func factory() -> LDConfig.CacheFactory {
-        return { logger, cacheKey in
+        return { cacheKey, logger in
             instancesLock.lock()
             defer { instancesLock.unlock() }
-            let inMemoryCache = LDInMemoryCache.factory()(logger, cacheKey)
+            let inMemoryCache = LDInMemoryCache.factory()(cacheKey, logger)
             let cache = LDFileCache(cacheKey: cacheKey, inMemoryCache: inMemoryCache, logger: logger)
             if inMemoryCache.data(forKey: initializationKey) == nil {
                 cache.deserializeFromFile()

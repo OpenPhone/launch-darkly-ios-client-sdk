@@ -10,5 +10,5 @@ public protocol KeyedValueCaching {
 }
 
 public extension LDConfig {
-    typealias CacheFactory = (_ logger: OSLog, _ cacheKey: String) -> KeyedValueCaching
+    typealias CacheFactory = (_ cacheKey: String, _ logger: OSLog) -> KeyedValueCaching
 }
