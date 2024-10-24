@@ -755,7 +755,9 @@ public class LDClient {
         let serviceFactory = serviceFactory ?? ClientServiceFactory(logger: config.logger, cacheFactory: config.cacheFactory)
         var keys = [config.mobileKey]
         keys.append(contentsOf: config.getSecondaryMobileKeys().values)
-        serviceFactory.makeCacheConverter().convertCacheData(serviceFactory: serviceFactory, keysToConvert: keys, maxCachedContexts: config.maxCachedContexts)
+        let cacheConverter = serviceFactory.makeCacheConverter()
+        cacheConverter.migrateStorage(serviceFactory: serviceFactory, keysToConvert: keys)
+        cacheConverter.convertCacheData(serviceFactory: serviceFactory, keysToConvert: keys, maxCachedContexts: config.maxCachedContexts)
         var mobileKeys = config.getSecondaryMobileKeys()
         var internalCount = 0
         let completionCheck = {
