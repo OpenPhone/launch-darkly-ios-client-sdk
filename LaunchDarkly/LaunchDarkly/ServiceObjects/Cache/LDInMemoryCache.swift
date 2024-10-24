@@ -12,6 +12,7 @@ public final class LDInMemoryCache: KeyedValueCaching {
         return { cacheKey, _ in
             instancesLock.lock()
             defer { instancesLock.unlock() }
+            let cacheKey = cacheKey ?? "default"
             if let cache = instances[cacheKey] { return cache }
             let cache = LDInMemoryCache()
             instances[cacheKey] = cache

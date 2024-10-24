@@ -14,6 +14,7 @@ public final class LDFileCache: KeyedValueCaching {
         return { cacheKey, logger in
             instancesLock.lock()
             defer { instancesLock.unlock() }
+            let cacheKey = cacheKey ?? "default"
             let inMemoryCache = LDInMemoryCache.factory()(cacheKey, logger)
             let cache = LDFileCache(cacheKey: cacheKey, inMemoryCache: inMemoryCache, encryptionKey: encryptionKey, logger: logger)
             if inMemoryCache.data(forKey: initializationKey) == nil {

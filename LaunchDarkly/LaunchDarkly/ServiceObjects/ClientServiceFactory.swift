@@ -36,7 +36,7 @@ final class ClientServiceFactory: ClientServiceCreating {
     }
 
     func makeKeyedValueCache(cacheKey: String?) -> KeyedValueCaching {
-        cacheFactory(cacheKey ?? "default", logger)
+        cacheFactory(cacheKey, logger)
     }
 
     func makeFeatureFlagCache(mobileKey: MobileKey, maxCachedContexts: Int) -> FeatureFlagCaching {
