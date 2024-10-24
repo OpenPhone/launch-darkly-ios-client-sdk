@@ -18,7 +18,7 @@ final class LDInMemoryCacheSpec: KeyedValueCachingBaseSpec {
 final class LDFileCacheSpec: KeyedValueCachingBaseSpec {
 
     override func makeSut(_ key: String) -> KeyedValueCaching {
-        return LDFileCache.factory()(key, .disabled)
+        return LDFileCache.factory(encryptionKey: "test_secret")(key, .disabled)
     }
 
     private func makeFileSut(_ key: String) -> LDFileCache {
@@ -37,7 +37,7 @@ final class LDFileCacheSpec: KeyedValueCachingBaseSpec {
         let url = try sut.pathToFile()
         try Data("corrupt".utf8).write(to: url, options: .atomic)
         sut.deserializeFromFile()
-        XCTAssertEqual(sut.keys(), [])
+        XCTAssertEqual(sut.keys(), ["key"])
     }
 
     func testSerialization() throws {

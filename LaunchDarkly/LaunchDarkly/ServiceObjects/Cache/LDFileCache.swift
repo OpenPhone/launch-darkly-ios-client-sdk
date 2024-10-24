@@ -5,16 +5,17 @@ public final class LDFileCache: KeyedValueCaching {
 
     private static let instancesLock = NSLock()
     private let cacheKey: String
+    private let encryptionKey: String?
     private let inMemoryCache: KeyedValueCaching
     private let fileQueue = DispatchQueue(label: "ld_file_io", qos: .utility).debouncer()
     private let logger: OSLog
 
-    public static func factory() -> LDConfig.CacheFactory {
+    public static func factory(encryptionKey: String? = nil) -> LDConfig.CacheFactory {
         return { cacheKey, logger in
             instancesLock.lock()
             defer { instancesLock.unlock() }
             let inMemoryCache = LDInMemoryCache.factory()(cacheKey, logger)
-            let cache = LDFileCache(cacheKey: cacheKey, inMemoryCache: inMemoryCache, logger: logger)
+            let cache = LDFileCache(cacheKey: cacheKey, inMemoryCache: inMemoryCache, encryptionKey: encryptionKey, logger: logger)
             if inMemoryCache.data(forKey: initializationKey) == nil {
                 cache.deserializeFromFile()
                 inMemoryCache.set(Data(), forKey: initializationKey)
@@ -48,9 +49,10 @@ public final class LDFileCache: KeyedValueCaching {
 
     // MARK: - Internal
 
-    init(cacheKey: String, inMemoryCache: KeyedValueCaching, logger: OSLog) {
+    init(cacheKey: String, inMemoryCache: KeyedValueCaching, encryptionKey: String?, logger: OSLog) {
         self.cacheKey = cacheKey
         self.inMemoryCache = inMemoryCache
+        self.encryptionKey = encryptionKey
         self.logger = logger
     }
 
@@ -69,7 +71,10 @@ public final class LDFileCache: KeyedValueCaching {
                 }
             }
             dictionary.removeValue(forKey: Self.initializationKey)
-            let data = try JSONEncoder().encode(dictionary)
+            var data = try JSONEncoder().encode(dictionary)
+            if let encryptionKey {
+                data = try Util.encrypt(data, encryptionKey: encryptionKey, cacheKey: cacheKey)
+            }
             let url = try pathToFile()
             try data.write(to: url, options: .atomic)
         } catch {
@@ -81,7 +86,10 @@ public final class LDFileCache: KeyedValueCaching {
     func deserializeFromFile() {
         do {
             let url = try pathToFile()
-            let data = try Data(contentsOf: url)
+            var data = try Data(contentsOf: url)
+            if let encryptionKey {
+                data = try Util.decrypt(data, encryptionKey: encryptionKey, cacheKey: cacheKey)
+            }
             let flags = try JSONDecoder().decode([String: Data].self, from: data)
             flags.forEach { key, value in
                 inMemoryCache.set(value, forKey: key)

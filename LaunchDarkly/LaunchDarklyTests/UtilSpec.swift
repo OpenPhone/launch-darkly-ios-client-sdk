@@ -19,6 +19,13 @@ final class UtilSpec: XCTestCase {
         XCTAssertEqual(output, expectedOutput)
     }
 
+    func testDataEncryption() throws {
+        let data = Data((0 ..< 10000).map { _ in UInt8.random(in: UInt8.min ... UInt8.max) })
+        let encryptedData = try Util.encrypt(data, encryptionKey: "test_pwd", cacheKey: "abc")
+        let decryptedData = try Util.decrypt(encryptedData, encryptionKey: "test_pwd", cacheKey: "abc")
+        XCTAssertEqual(decryptedData, data)
+    }
+
     func testDispatchQueueDebounceConcurrentRequests() {
         let exp = XCTestExpectation(description: #function)
         let queue = DispatchQueue(label: "test")
