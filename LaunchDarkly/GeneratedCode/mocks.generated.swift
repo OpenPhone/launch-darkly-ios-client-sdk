@@ -353,17 +353,6 @@ final class KeyedValueCachingMock: KeyedValueCaching {
         return dataReturnValue
     }
 
-    var dictionaryCallCount = 0
-    var dictionaryCallback: (() throws -> Void)?
-    var dictionaryReceivedForKey: String?
-    var dictionaryReturnValue: [String: Any]?
-    func dictionary(forKey: String) -> [String: Any]? {
-        dictionaryCallCount += 1
-        dictionaryReceivedForKey = forKey
-        try! dictionaryCallback?()
-        return dictionaryReturnValue
-    }
-
     var removeObjectCallCount = 0
     var removeObjectCallback: (() throws -> Void)?
     var removeObjectReceivedForKey: String?

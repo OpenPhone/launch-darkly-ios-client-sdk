@@ -32,11 +32,6 @@ public final class LDFileCache: KeyedValueCaching {
         return inMemoryCache.data(forKey: forKey)
     }
 
-    public func dictionary(forKey: String) -> [String : Any]? {
-        // Legacy - not used by the library
-        return nil
-    }
-
     public func removeObject(forKey: String) {
         inMemoryCache.removeObject(forKey: forKey)
         scheduleSerialization()

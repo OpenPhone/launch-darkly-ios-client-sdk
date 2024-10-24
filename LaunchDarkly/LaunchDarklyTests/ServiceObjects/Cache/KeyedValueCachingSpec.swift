@@ -92,11 +92,6 @@ class KeyedValueCachingBaseSpec: XCTestCase {
         XCTAssertEqual(makeSut("test").data(forKey: "test_key"), data)
     }
 
-    func testDictionaryForKey() throws {
-        try skipForBaseSpec()
-        // No-op: no public setter declared in the protocol, unused in the library
-    }
-
     func testRemoveObjectForKey() throws {
         try skipForBaseSpec()
         let data = Data("random".utf8)

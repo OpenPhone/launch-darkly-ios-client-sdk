@@ -31,11 +31,6 @@ public final class LDInMemoryCache: KeyedValueCaching {
         return cache[forKey] as? Data
     }
 
-    public func dictionary(forKey: String) -> [String : Any]? {
-        // Legacy - not used by the library
-        return nil
-    }
-
     public func removeObject(forKey: String) {
         cacheLock.lock()
         defer { cacheLock.unlock() }
