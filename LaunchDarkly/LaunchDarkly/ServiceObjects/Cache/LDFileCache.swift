@@ -3,11 +3,13 @@ import OSLog
 
 public final class LDFileCache: KeyedValueCaching {
 
+    private static var instances: [String: LDFileCache] = [:]
     private static let instancesLock = NSLock()
+    private static let fileQueue = DispatchQueue(label: "ld_file_io", qos: .utility)
     private let cacheKey: String
     private let encryptionKey: String?
     private let inMemoryCache: KeyedValueCaching
-    private let fileQueue = DispatchQueue(label: "ld_file_io", qos: .utility).debouncer()
+    private let fileIO = fileQueue.debouncer()
     private let logger: OSLog
 
     public static func factory(encryptionKey: String? = nil) -> LDConfig.CacheFactory {
@@ -15,12 +17,14 @@ public final class LDFileCache: KeyedValueCaching {
             instancesLock.lock()
             defer { instancesLock.unlock() }
             let cacheKey = cacheKey ?? "default"
+            if let cache = instances[cacheKey] { return cache }
             let inMemoryCache = LDInMemoryCache.factory()(cacheKey, logger)
             let cache = LDFileCache(cacheKey: cacheKey, inMemoryCache: inMemoryCache, encryptionKey: encryptionKey, logger: logger)
             if inMemoryCache.data(forKey: initializationKey) == nil {
                 cache.deserializeFromFile()
                 inMemoryCache.set(Data(), forKey: initializationKey)
             }
+            instances[cacheKey] = cache
             return cache
         }
     }
@@ -58,7 +62,7 @@ public final class LDFileCache: KeyedValueCaching {
     }
 
     func scheduleSerialization() {
-        fileQueue.debounce(interval: Constants.writeToFileDelay) { [weak self] in
+        fileIO.debounce(interval: Constants.writeToFileDelay) { [weak self] in
             self?.serializeToFile()
         }
     }
