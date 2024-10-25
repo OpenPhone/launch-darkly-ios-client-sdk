@@ -18,4 +18,51 @@ final class UtilSpec: XCTestCase {
         let output = Util.sha256(input).base64UrlEncodedString
         XCTAssertEqual(output, expectedOutput)
     }
+
+    func testDataEncryption() throws {
+        let data = Data((0 ..< 10000).map { _ in UInt8.random(in: UInt8.min ... UInt8.max) })
+        let encryptedData = try Util.encrypt(data, encryptionKey: "test_pwd", cacheKey: "abc")
+        let decryptedData = try Util.decrypt(encryptedData, encryptionKey: "test_pwd", cacheKey: "abc")
+        XCTAssertEqual(decryptedData, data)
+    }
+
+    func testDispatchQueueDebounceConcurrentRequests() {
+        let exp = XCTestExpectation(description: #function)
+        let queue = DispatchQueue(label: "test")
+        let sut = queue.debouncer()
+        var counter: Int = 0
+        DispatchQueue.concurrentPerform(iterations: 100) { _ in
+            sut.debounce(interval: .milliseconds(200)) {
+                counter += 1
+            }
+        }
+        XCTAssertEqual(counter, 0)
+        DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(100)) {
+            XCTAssertEqual(counter, 0)
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(300)) {
+            XCTAssertEqual(counter, 1)
+            exp.fulfill()
+        }
+        wait(for: [exp], timeout: 1)
+    }
+
+    func testDispatchQueueDebounceDelayedRequests() {
+        let exp = XCTestExpectation(description: #function)
+        let queue = DispatchQueue(label: "test")
+        let sut = queue.debouncer()
+        var counter: Int = 0
+        for index in 0..<5 {
+            DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(index * 100)) {
+                sut.debounce(interval: .milliseconds(200)) {
+                    counter += 1
+                }
+            }
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(800)) {
+            XCTAssertEqual(counter, 1)
+            exp.fulfill()
+        }
+        wait(for: [exp], timeout: 1)
+    }
 }

@@ -57,18 +57,24 @@ protocol FeatureFlagCaching {
     func saveCachedData(_ storedItems: StoredItems, cacheKey: String, contextHash: String, lastUpdated: Date, etag: String?)
 }
 
+extension MobileKey {
+    func cacheKey() -> String {
+        let cacheKey: String
+        if let bundleId = Bundle.main.bundleIdentifier {
+            cacheKey = "\(Util.sha256base64(bundleId)).\(Util.sha256base64(self))"
+        } else {
+            cacheKey = Util.sha256base64(self)
+        }
+        return "com.launchdarkly.client.\(cacheKey)"
+    }
+}
+
 final class FeatureFlagCache: FeatureFlagCaching {
     let keyedValueCache: KeyedValueCaching
     let maxCachedContexts: Int
 
     init(serviceFactory: ClientServiceCreating, mobileKey: MobileKey, maxCachedContexts: Int) {
-        let cacheKey: String
-        if let bundleId = Bundle.main.bundleIdentifier {
-            cacheKey = "\(Util.sha256base64(bundleId)).\(Util.sha256base64(mobileKey))"
-        } else {
-            cacheKey = Util.sha256base64(mobileKey)
-        }
-        self.keyedValueCache = serviceFactory.makeKeyedValueCache(cacheKey: "com.launchdarkly.client.\(cacheKey)")
+        self.keyedValueCache = serviceFactory.makeKeyedValueCache(cacheKey: mobileKey.cacheKey())
         self.maxCachedContexts = maxCachedContexts
     }
 

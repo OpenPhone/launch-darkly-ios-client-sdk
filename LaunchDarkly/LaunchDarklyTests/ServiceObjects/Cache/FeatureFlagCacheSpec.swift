@@ -71,7 +71,7 @@ final class FeatureFlagCacheSpec: XCTestCase {
 
     func testCanReuseFullCacheIfHashIsSame() {
         let now = Date()
-        let flagCache = FeatureFlagCache(serviceFactory: ClientServiceFactory(logger: .disabled), mobileKey: "abc", maxCachedContexts: 5)
+        let flagCache = FeatureFlagCache(serviceFactory: ClientServiceFactory(logger: .disabled, cacheFactory: LDConfig.Defaults.cacheFactory), mobileKey: "abc", maxCachedContexts: 5)
         flagCache.saveCachedData(testFlagCollection.flags, cacheKey: "key", contextHash: "hash", lastUpdated: now, etag: "example-etag")
 
         let results = flagCache.getCachedData(cacheKey: "key", contextHash: "hash")
@@ -82,7 +82,7 @@ final class FeatureFlagCacheSpec: XCTestCase {
 
     func testCanReusePartialCacheIfOnlyHashChanges() {
         let now = Date()
-        let flagCache = FeatureFlagCache(serviceFactory: ClientServiceFactory(logger: .disabled), mobileKey: "abc", maxCachedContexts: 5)
+        let flagCache = FeatureFlagCache(serviceFactory: ClientServiceFactory(logger: .disabled, cacheFactory: LDConfig.Defaults.cacheFactory), mobileKey: "abc", maxCachedContexts: 5)
         flagCache.saveCachedData(testFlagCollection.flags, cacheKey: "key", contextHash: "hash", lastUpdated: now, etag: "example-etag")
 
         let results = flagCache.getCachedData(cacheKey: "key", contextHash: "changed-hash")
@@ -93,7 +93,7 @@ final class FeatureFlagCacheSpec: XCTestCase {
 
     func testCannotReuseCacheIfKeyChanges() {
      let now = Date()
-        let flagCache = FeatureFlagCache(serviceFactory: ClientServiceFactory(logger: .disabled), mobileKey: "abc", maxCachedContexts: 5)
+        let flagCache = FeatureFlagCache(serviceFactory: ClientServiceFactory(logger: .disabled, cacheFactory: LDConfig.Defaults.cacheFactory), mobileKey: "abc", maxCachedContexts: 5)
         flagCache.saveCachedData(testFlagCollection.flags, cacheKey: "key", contextHash: "hash", lastUpdated: now, etag: "example-etag")
 
         let results = flagCache.getCachedData(cacheKey: "changed-key", contextHash: "hash")

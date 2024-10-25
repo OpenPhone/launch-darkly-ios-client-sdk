@@ -752,10 +752,12 @@ public class LDClient {
 
         os_log("%s LDClient starting", log: config.logger, type: .debug, typeName(and: #function))
 
-        let serviceFactory = serviceFactory ?? ClientServiceFactory(logger: config.logger)
+        let serviceFactory = serviceFactory ?? ClientServiceFactory(logger: config.logger, cacheFactory: config.cacheFactory)
         var keys = [config.mobileKey]
         keys.append(contentsOf: config.getSecondaryMobileKeys().values)
-        serviceFactory.makeCacheConverter().convertCacheData(serviceFactory: serviceFactory, keysToConvert: keys, maxCachedContexts: config.maxCachedContexts)
+        let cacheConverter = serviceFactory.makeCacheConverter()
+        cacheConverter.migrateStorage(serviceFactory: serviceFactory, keysToMigrate: keys, from: LDConfig.Defaults.cacheFactory)
+        cacheConverter.convertCacheData(serviceFactory: serviceFactory, keysToConvert: keys, maxCachedContexts: config.maxCachedContexts)
         var mobileKeys = config.getSecondaryMobileKeys()
         var internalCount = 0
         let completionCheck = {

@@ -10,6 +10,15 @@ import LDSwiftEventSource
 // MARK: - CacheConvertingMock
 final class CacheConvertingMock: CacheConverting {
 
+    var migrateStorageCallCount = 0
+    var migrateStorageCallback: (() throws -> Void)?
+    var migrateStorageReceivedArguments: (serviceFactory: ClientServiceCreating, keysToMigrate: [MobileKey], oldCache: LDConfig.CacheFactory)?
+    func migrateStorage(serviceFactory: ClientServiceCreating, keysToMigrate: [MobileKey], from oldCache: @escaping LDConfig.CacheFactory) {
+        migrateStorageCallCount += 1
+        migrateStorageReceivedArguments = (serviceFactory: serviceFactory, keysToMigrate: keysToMigrate, oldCache: oldCache)
+        try! migrateStorageCallback?()
+    }
+
     var convertCacheDataCallCount = 0
     var convertCacheDataCallback: (() throws -> Void)?
     var convertCacheDataReceivedArguments: (serviceFactory: ClientServiceCreating, keysToConvert: [MobileKey], maxCachedContexts: Int)?
@@ -351,17 +360,6 @@ final class KeyedValueCachingMock: KeyedValueCaching {
         dataReceivedForKey = forKey
         try! dataCallback?()
         return dataReturnValue
-    }
-
-    var dictionaryCallCount = 0
-    var dictionaryCallback: (() throws -> Void)?
-    var dictionaryReceivedForKey: String?
-    var dictionaryReturnValue: [String: Any]?
-    func dictionary(forKey: String) -> [String: Any]? {
-        dictionaryCallCount += 1
-        dictionaryReceivedForKey = forKey
-        try! dictionaryCallback?()
-        return dictionaryReturnValue
     }
 
     var removeObjectCallCount = 0

@@ -34,4 +34,18 @@ final class CacheConverterSpec: XCTestCase {
         XCTAssertEqual(serviceFactory.makeFeatureFlagCacheCallCount, 2)
         XCTAssertEqual(v7valueCacheMock.dataCallCount, 2)
     }
+
+    func testCacheStoreMigration() {
+        let oldCache = LDInMemoryCache()
+        oldCache.set(Data("test_1".utf8), forKey: "data_1")
+        oldCache.set(Data("test_2".utf8), forKey: "data_2")
+        oldCache.set(Data("test_3".utf8), forKey: "data_3")
+        let newCache = KeyedValueCachingMock()
+        newCache.keysReturnValue = []
+        serviceFactory.makeFeatureFlagCacheReturnValue.keyedValueCache = newCache
+        serviceFactory.makeKeyedValueCacheReturnValue = newCache
+        CacheConverter().migrateStorage(serviceFactory: serviceFactory, keysToMigrate: ["key1", "key2"], from: { _, _ in oldCache })
+        XCTAssertEqual(serviceFactory.makeKeyedValueCacheCallCount, 2)
+        XCTAssertEqual(newCache.setCallCount, 6)
+    }
 }
