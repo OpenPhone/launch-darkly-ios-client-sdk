@@ -20,10 +20,7 @@ public final class LDFileCache: KeyedValueCaching {
             if let cache = instances[cacheKey] { return cache }
             let inMemoryCache = LDInMemoryCache.factory()(cacheKey, logger)
             let cache = LDFileCache(cacheKey: cacheKey, inMemoryCache: inMemoryCache, encryptionKey: encryptionKey, logger: logger)
-            if inMemoryCache.data(forKey: initializationKey) == nil {
-                cache.deserializeFromFile()
-                inMemoryCache.set(Data(), forKey: initializationKey)
-            }
+            cache.deserializeFromFile()
             instances[cacheKey] = cache
             return cache
         }
@@ -49,7 +46,7 @@ public final class LDFileCache: KeyedValueCaching {
     }
 
     public func keys() -> [String] {
-        return inMemoryCache.keys().filter({ $0 != Self.initializationKey })
+        return inMemoryCache.keys()
     }
 
     // MARK: - Internal
@@ -75,7 +72,6 @@ public final class LDFileCache: KeyedValueCaching {
                     dictionary[key] = data
                 }
             }
-            dictionary.removeValue(forKey: Self.initializationKey)
             var data = try JSONEncoder().encode(dictionary)
             if let encryptionKey {
                 data = try Util.encrypt(data, encryptionKey: encryptionKey, cacheKey: cacheKey)
@@ -115,8 +111,6 @@ public final class LDFileCache: KeyedValueCaching {
         let fileName = Util.sha256hex(cacheKey)
         return dir.appendingPathComponent(fileName)
     }
-
-    private static var initializationKey: String { "LDFileCache_initialized" }
 }
 
 extension LDFileCache: TypeIdentifying { }
